@@ -31,6 +31,11 @@ except ImportError:
     sr = None
     AudioSegment = None
 
+try:
+    from pptx import Presentation
+except ImportError:
+    Presentation = None
+
 def file_to_text(filepath: str) -> str:
     ext = os.path.splitext(filepath)[1].lower()
     if ext in ['.txt', '.md', '.csv', '.json', '.xml']:
@@ -67,6 +72,14 @@ def file_to_text(filepath: str) -> str:
             except Exception:
                 text = ''
         os.remove(wav_path)
+        return text
+    elif ext in ['.pptx'] and Presentation:
+        prs = Presentation(filepath)
+        text = ''
+        for slide in prs.slides:
+            for shape in slide.shapes:
+                if hasattr(shape, "text"):
+                    text += shape.text + '\n'
         return text
     else:
         raise ValueError(f'不支持的文件类型: {ext}')
